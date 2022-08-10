@@ -719,9 +719,7 @@ public class Peripheral extends BluetoothGattCallback {
 		}
 
 		BluetoothGattService service = gatt.getService(serviceUUID);
-		final BluetoothGattCharacteristic characteristic = findReadableCharacteristic(service, characteristicUUID);
-		// TODO find descriptor
-		final BluetoothGattDescriptor descriptor;
+		final BluetoothGattDescriptor descriptor = findDescriptor(service, characteristicUUID, descriptorUUID);
 
 		if (descriptor == null) {
 			callback.invoke("Descriptor " + descriptorUUID + " not found.", null);
@@ -895,6 +893,25 @@ public class Peripheral extends BluetoothGattCallback {
 		return null;
 	}
 
+	private BluetoothGattDescriptor findDescriptor(BluetoothGattService service, UUID characteristicUUID, UUID descriptorUUID) {
+		if (service != null) {
+			int read = BluetoothGattCharacteristic.PROPERTY_READ;
+
+			List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+			for (BluetoothGattCharacteristic characteristic : characteristics) {
+
+				if (characteristicUUID.equals(characteristic.getUuid())) {
+					BluetoothGattDescriptor descriptor = characteristic.getDescriptor(descriptorUUID);
+					if (descriptor != null) {
+				    	return descriptor;
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public boolean doWrite(final BluetoothGattCharacteristic characteristic, byte[] data, final Callback callback) {
 		final byte[] copyOfData = copyOf(data);
 		boolean result = commandQueue.add(new Runnable() {
@@ -1033,9 +1050,7 @@ public class Peripheral extends BluetoothGattCallback {
 		}
 
 		BluetoothGattService service = gatt.getService(serviceUUID);
-		BluetoothGattCharacteristic characteristic = findWritableCharacteristic(service, characteristicUUID, writeType);
-		// TODO get descriptor
-		BluetoothGattDescriptor descriptor;
+		BluetoothGattDescriptor descriptor = findDescriptor(service, characteristicUUID, descriptorUUID);
 
 		if (descriptor == null) {
 			callback.invoke("Descriptor " + descriptorUUID + " not found.");
