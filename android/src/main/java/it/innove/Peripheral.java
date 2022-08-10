@@ -468,7 +468,9 @@ public class Peripheral extends BluetoothGattCallback {
 		completedCommand();
 	}
 
-	public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status, byte[] value) {
+	public void onDescriptorRead (BluetoothGatt gatt,
+								  BluetoothGattDescriptor descriptor,
+								  int status) {
 		if (status != BluetoothGatt.GATT_SUCCESS) {
 			if (status == GATT_AUTH_FAIL || status == GATT_INSUFFICIENT_AUTHENTICATION) {
 				Log.d(BleManager.LOG_TAG, "Read needs bonding");
