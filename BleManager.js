@@ -119,6 +119,43 @@ class BleManager {
     });
   }
 
+  readDescriptor(peripheralId, serviceUUID, characteristicUUID, descriptorUUID) {
+    return new Promise((fulfill, reject) => {
+      bleManager.readDescriptor(
+        peripheralId,
+        serviceUUID,
+        characteristicUUID,
+        descriptorUUID,
+        (error, data) => {
+          if (error) {
+            reject(error);
+          } else {
+            fulfill(data);
+          }
+        }
+      );
+    });
+  }
+
+  writeDescriptor(peripheralId, serviceUUID, characteristicUUID, descriptorUUID, data) {
+    return new Promise((fulfill, reject) => {
+      bleManager.writeDescriptor(
+        peripheralId,
+        serviceUUID,
+        characteristicUUID,
+        descriptorUUID,
+        data,
+        error => {
+          if (error) {
+            reject(error);
+          } else {
+            fulfill();
+          }
+        }
+      );
+    });
+  }
+
   connect(peripheralId) {
     return new Promise((fulfill, reject) => {
       bleManager.connect(peripheralId, error => {

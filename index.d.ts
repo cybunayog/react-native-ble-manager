@@ -86,6 +86,19 @@ declare module "react-native-ble-manager" {
     queueSleepTime?: number
   ): Promise<void>;
 
+  export function readDescriptor(
+    peripheralID: string,
+    serviceUUID: string,
+    characteristicUUID: string,
+    descriptorUUID: string
+  ): Promise<any>;
+  export function writeDescriptor(
+    peripheralID: string,
+    serviceUUID: string,
+    characteristicUUID: string,
+    descriptorUUID: string,
+    data: any,
+  ): Promise<void>;
   export function readRSSI(peripheralID: string): Promise<void>;
 
   export function getConnectedPeripherals(
