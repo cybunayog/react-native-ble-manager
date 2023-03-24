@@ -365,44 +365,43 @@ public class Peripheral extends BluetoothGattCallback {
 				gatt = null;
 				sendConnectionEvent(device, "BleManagerDisconnectPeripheral", BluetoothGatt.GATT_SUCCESS);
 
-			}
+			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 
-		} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+				if (discoverServicesRunnable != null) {
+					mainHandler.removeCallbacks(discoverServicesRunnable);
+					discoverServicesRunnable = null;
+				}
 
-			if (discoverServicesRunnable != null) {
-				mainHandler.removeCallbacks(discoverServicesRunnable);
-				discoverServicesRunnable = null;
-			}
-
-			List<Callback> callbacks = Arrays.asList(writeCallback, writeDescriptorCallback, retrieveServicesCallback,
-					readRSSICallback, readCallback, readDescriptorCallback, registerNotifyCallback, requestMTUCallback);
-			for (Callback currentCallback : callbacks) {
-				if (currentCallback != null) {
-					try {
-						currentCallback.invoke("Device disconnected");
-					} catch (Exception e) {
-						e.printStackTrace();
+				List<Callback> callbacks = Arrays.asList(writeCallback, writeDescriptorCallback, retrieveServicesCallback,
+						readRSSICallback, readCallback, readDescriptorCallback, registerNotifyCallback, requestMTUCallback);
+				for (Callback currentCallback : callbacks) {
+					if (currentCallback != null) {
+						try {
+							currentCallback.invoke("Device disconnected");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			}
-			if (connectCallback != null) {
-				connectCallback.invoke("Connection error");
-				connectCallback = null;
-			}
-			writeCallback = null;
-			writeQueue.clear();
-			writeDescriptorCallback = null;
-			readCallback = null;
-			readDescriptorCallback = null;
-			retrieveServicesCallback = null;
-			readRSSICallback = null;
-			registerNotifyCallback = null;
-			requestMTUCallback = null;
-			commandQueue.clear();
-			commandQueueBusy = false;
+				if (connectCallback != null) {
+					connectCallback.invoke("Connection error");
+					connectCallback = null;
+				}
+				writeCallback = null;
+				writeQueue.clear();
+				writeDescriptorCallback = null;
+				readCallback = null;
+				readDescriptorCallback = null;
+				retrieveServicesCallback = null;
+				readRSSICallback = null;
+				registerNotifyCallback = null;
+				requestMTUCallback = null;
+				commandQueue.clear();
+				commandQueueBusy = false;
 
-			this.disconnect(true);
-		}
+				this.disconnect(true);
+			}
+		});
 
 	}
 
@@ -549,7 +548,7 @@ public class Peripheral extends BluetoothGattCallback {
 			}
 
 			completedCommand();
-		});
+		}
 	}
 
 	@Override
