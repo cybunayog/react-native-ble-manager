@@ -299,7 +299,7 @@ public class Peripheral extends BluetoothGattCallback {
 			}
 
 			connecting = false;
-			if (newState == BluetoothProfile.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
+			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				connected = true;
 
 				discoverServicesRunnable = new Runnable() {
@@ -323,47 +323,6 @@ public class Peripheral extends BluetoothGattCallback {
 					connectCallback.invoke();
 					connectCallback = null;
 				}
-
-			} else if (newState == BluetoothProfile.STATE_DISCONNECTED || status != BluetoothGatt.GATT_SUCCESS) {
-
-				if (discoverServicesRunnable != null) {
-					mainHandler.removeCallbacks(discoverServicesRunnable);
-					discoverServicesRunnable = null;
-				}
-
-				List<Callback> callbacks = Arrays.asList(writeCallback, retrieveServicesCallback, readRSSICallback,
-						readCallback, registerNotifyCallback, requestMTUCallback);
-				for (Callback currentCallback : callbacks) {
-					if (currentCallback != null) {
-						try {
-							currentCallback.invoke("Device disconnected");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}				}
-				}
-				if (connectCallback != null) {
-					connectCallback.invoke("Connection error");
-					connectCallback = null;
-				}
-				writeCallback = null;
-				writeQueue.clear();
-				readCallback = null;
-				retrieveServicesCallback = null;
-				readRSSICallback = null;
-				registerNotifyCallback = null;
-				requestMTUCallback = null;
-				commandQueue.clear();
-				commandQueueBusy = false;
-				connectCallback = null;
-				connected = false;
-				clearBuffers();
-				commandQueue.clear();
-				commandQueueBusy = false;
-
-				gatt.disconnect();
-				gatt.close();
-				gatt = null;
-				sendConnectionEvent(device, "BleManagerDisconnectPeripheral", BluetoothGatt.GATT_SUCCESS);
 
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 
