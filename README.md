@@ -359,7 +359,7 @@ Returns a `Promise` object.
 - `serviceUUID` - `String` - the UUID of the service.
 - `characteristicUUID` - `String` - the UUID of the characteristic.
 - `data` - `Byte array` - the data to write.
-- `maxByteSize` - `Integer` - specify the max byte size before splitting message, defaults to 20 bytes if not specified
+- `maxByteSize` - `Integer` - specify the max byte size before splitting message
 
 **Data preparation**
 
@@ -691,12 +691,12 @@ The scanning for peripherals is ended.
 
 **Arguments**
 
-- `status` - `Number` - [iOS] the reason for stopping the scan. Error code 10 is used for timeouts, 0 covers everything else. [Android] the reason for stopping the scan (<https://developer.android.com/reference/android/bluetooth/le/ScanCallback#constants_1>). Error code 10 is used for timeouts
+- `none`
 
 **Examples**
 
 ```js
-bleManagerEmitter.addListener("BleManagerStopScan", (args) => {
+bleManagerEmitter.addListener("BleManagerStopScan", () => {
   // Scanning is stopped
 });
 ```

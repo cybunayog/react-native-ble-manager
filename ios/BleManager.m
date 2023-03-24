@@ -378,7 +378,7 @@ RCT_EXPORT_METHOD(stopScan:(nonnull RCTResponseSenderBlock)callback)
     }
     [manager stopScan];
     if (hasListeners) {
-				[self sendEventWithName:@"BleManagerStopScan" body:@{@"status": @0}];
+        [self sendEventWithName:@"BleManagerStopScan" body:@{}];
     }
     callback(@[[NSNull null]]);
 }
@@ -390,7 +390,7 @@ RCT_EXPORT_METHOD(stopScan:(nonnull RCTResponseSenderBlock)callback)
     [manager stopScan];
     if (hasListeners) {
         if (self.bridge) {
-            [self sendEventWithName:@"BleManagerStopScan" body:@{@"status": @10}];
+            [self sendEventWithName:@"BleManagerStopScan" body:@{}];
         }
     }
 }
