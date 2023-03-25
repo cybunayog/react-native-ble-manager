@@ -883,11 +883,7 @@ public class Peripheral extends BluetoothGattCallback {
 						Log.d(BleManager.LOG_TAG, "Error, command exception");
 						completedCommand();
 					}
-
-                	readRSSICallbacks.clear();
             	}
-
-            	completedCommand();
         	});
 		}
     }
