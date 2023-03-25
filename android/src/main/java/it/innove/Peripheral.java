@@ -509,25 +509,28 @@ public class Peripheral extends BluetoothGattCallback {
 	public void onDescriptorRead (BluetoothGatt gatt,
 								  BluetoothGattDescriptor descriptor,
 								  int status) {
-		if (status != BluetoothGatt.GATT_SUCCESS) {
-			if (status == GATT_AUTH_FAIL || status == GATT_INSUFFICIENT_AUTHENTICATION) {
-				Log.d(BleManager.LOG_TAG, "Read needs bonding");
-				// *not* doing completedCommand()
-				return;
-			}
-			sendBackrError(readDescriptorCallback, "Error reading " + descriptor.getUuid() + " status=" + status);
-		} else if (readDescriptorCallback != null) {
+            if (status != BluetoothGatt.GATT_SUCCESS) {
+                if (status == GATT_AUTH_FAIL || status == GATT_INSUFFICIENT_AUTHENTICATION) {
+                    for (Callback readDescriptorCallback: readDescriptorCallbacks) {
+                        Log.d(BleManager.LOG_TAG, "Read needs bonding");
+                        // *not* doing completedCommand()
+                        sendBackrError(readDescriptorCallback, "Error reading " + descriptor.getUuid() + " status=" + status);
+                        return;
+                    }
+                }
+		} else if (!readDescriptorCallback.isEmpty()) {
 			final byte[] dataValue = copyOf(descriptor.getValue());
-			final Callback callback = readDescriptorCallback;
-			readDescriptorCallback = null;
-			mainHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					callback.invoke(null, BleManager.bytesToWritableArray(dataValue));
-				}
-			});
+            for (Callback readDescriptorCallback: readDescriptorCallbacks) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        readDescriptorCallback.invoke(null, BleManager.bytesToWritableArray(dataValue));
+                    }
+			    });
+            }
+			readDescriptorCallbacks.clear();
 		}
-
+	
 		completedCommand();
 	}
 
@@ -563,39 +566,6 @@ public class Peripheral extends BluetoothGattCallback {
                 registerNotifyCallbacks.clear();
             } else {
                 Log.e(BleManager.LOG_TAG, "onDescriptorWrite with no callback");
-            }
-            completedCommand();
-        });
-    }
-
-    @Override
-    public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-        super.onDescriptorRead(gatt, descriptor, status);
-
-        mainHandler.post(() -> {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                if (status == GATT_AUTH_FAIL || status == GATT_INSUFFICIENT_AUTHENTICATION) {
-                    Log.d(BleManager.LOG_TAG, "Read needs bonding");
-                }
-
-                for (Callback readDescriptorCallback : readDescriptorCallbacks) {
-                    readDescriptorCallback.invoke(
-                            "Error reading descriptor " + descriptor.getUuid() + " status=" + status,
-                            null
-                    );
-                }
-                readDescriptorCallbacks.clear();
-            } else if (!readDescriptorCallbacks.isEmpty()) {
-                final byte[] dataValue = copyOf(descriptor.getValue());
-
-                for (Callback readDescriptorCallback : readDescriptorCallbacks) {
-                    readDescriptorCallback.invoke(
-                            null,
-                            BleManager.bytesToWritableArray(dataValue)
-                    );
-                }
-
-                readDescriptorCallbacks.clear();
             }
             completedCommand();
         });
@@ -640,7 +610,7 @@ public class Peripheral extends BluetoothGattCallback {
 			return;
 		}
 
-		this.readDescriptorCallbacks.addLast(callback);
+		readDescriptorCallbacks.addLast(callback);
         boolean result = commandQueue.add(new Runnable() {
 			@Override
 			public void run() {
@@ -835,50 +805,6 @@ public class Peripheral extends BluetoothGattCallback {
 			}
 		});
 	}
-
-    public void readDescriptor(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID, final Callback callback) {
-        enqueue(() -> {
-            if (!isConnected() || gatt == null) {
-                callback.invoke("Device is not connected", null);
-                completedCommand();
-                return;
-            }
-
-            BluetoothGattService service = gatt.getService(serviceUUID);
-            final BluetoothGattCharacteristic characteristic = findReadableCharacteristic(service, characteristicUUID);
-
-            if (characteristic == null) {
-                callback.invoke("Characteristic " + characteristicUUID + " not found.", null);
-                completedCommand();
-                return;
-            }
-
-            final BluetoothGattDescriptor descriptor = characteristic.getDescriptor(descriptorUUID);
-            if (descriptor == null) {
-                callback.invoke("Read descriptor failed for " + descriptorUUID, null);
-                completedCommand();
-                return;
-            }
-
-            final int readPermissionBitMask = BluetoothGattDescriptor.PERMISSION_READ
-                | BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED
-                | BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM;
-            if ((descriptor.getPermissions() & readPermissionBitMask) != 0) {
-                callback.invoke("Read descriptor failed for " + descriptorUUID + ": Descriptor is missing read permission", null);
-                completedCommand();
-                return;
-            }
-
-            this.readDescriptorCallbacks.addLast(callback);
-            if (!gatt.readDescriptor(descriptor)) {
-                for (Callback readDescriptorCallback: readDescriptorCallbacks) {
-                    readDescriptorCallback.invoke("Reading descriptor failed", null);
-                }
-                readDescriptorCallbacks.clear();
-                completedCommand();
-            }
-        });
-    }
 
     private byte[] copyOf(byte[] source) {
         if (source == null) return new byte[0];
@@ -1122,7 +1048,7 @@ public class Peripheral extends BluetoothGattCallback {
 					writeQueue.addAll(splittedMessage);
 					if (! doWrite(characteristic, firstMessage, callback)) {
 						writeQueue.clear();
-						writeCallback = null;
+						writeCallbacks.clear();
 						callback.invoke("Write failed");
 					}
 				} else {
@@ -1162,7 +1088,7 @@ public class Peripheral extends BluetoothGattCallback {
 			@Override
 			public void run() {
 				descriptor.setValue(copyOfData);
-                this.writeDescriptorCallbacks.addLast(callback);
+                writeDescriptorCallbacks.addLast(callback);
 				if (!gatt.writeDescriptor(descriptor)) {
                     for (Callback writeDescriptorCallback: writeDescriptorCallbacks) {
                         sendBackrError(writeDescriptorCallback, "Write failed");
@@ -1197,7 +1123,7 @@ public class Peripheral extends BluetoothGattCallback {
 
 	 	if (!doDescriptorWrite(descriptor, data, callback)) {
 			callback.invoke("Write failed");
-			writeDescriptorCallback = null;
+			writeDescriptorCallbacks.clear();
 		}
 	}
 
