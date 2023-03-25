@@ -547,7 +547,7 @@ public class Peripheral extends BluetoothGattCallback {
 				}
 
 				writeDescriptorCallbacks.clear();
-			} else iif (!registerNotifyCallbacks.isEmpty()) {
+			} else if (!registerNotifyCallbacks.isEmpty()) {
 				if (status == BluetoothGatt.GATT_SUCCESS) {
 					for (Callback registerNotifyCallback: registerNotifyCallbacks) {
 						registerNotifyCallback.invoke();
@@ -1162,7 +1162,7 @@ public class Peripheral extends BluetoothGattCallback {
 			@Override
 			public void run() {
 				descriptor.setValue(copyOfData);
-                this.writeDescriptorCallbacks.addLast(callback)
+                this.writeDescriptorCallbacks.addLast(callback);
 				if (!gatt.writeDescriptor(descriptor)) {
                     for (Callback writeDescriptorCallback: writeDescriptorCallbacks) {
                         sendBackrError(writeDescriptorCallback, "Write failed");
