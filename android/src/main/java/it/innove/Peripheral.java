@@ -518,7 +518,7 @@ public class Peripheral extends BluetoothGattCallback {
                         return;
                     }
                 }
-		} else if (!readDescriptorCallback.isEmpty()) {
+		} else if (!readDescriptorCallbacks.isEmpty()) {
 			final byte[] dataValue = copyOf(descriptor.getValue());
             for (Callback readDescriptorCallback: readDescriptorCallbacks) {
                 mainHandler.post(new Runnable() {
