@@ -888,6 +888,7 @@ public class Peripheral extends BluetoothGattCallback {
             }
 
             completedCommand();
+			return;
         });
     }
 
