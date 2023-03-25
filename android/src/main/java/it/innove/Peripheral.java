@@ -882,14 +882,14 @@ public class Peripheral extends BluetoothGattCallback {
 					} catch (Exception ex) {
 						Log.d(BleManager.LOG_TAG, "Error, command exception");
 						completedCommand();
-				}
+					}
 
-                readRSSICallbacks.clear();
-            }
+                	readRSSICallbacks.clear();
+            	}
 
-            completedCommand();
-			return;
-        });
+            	completedCommand();
+        	});
+		}
     }
 
     private String bufferedCharacteristicsKey(String serviceUUID, String characteristicUUID) {
