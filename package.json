@@ -22,18 +22,8 @@
     "name": "Innove",
     "url": "https://github.com/innoveit"
   },
-  "main": "dist/cjs/index.js",
-  "types": "dist/esm/index.d.ts",
-  "module": "dist/esm/index.js",
-  "react-native": "src/index.ts",
-  "files": [
-    "/dist",
-    "/src",
-    "/android",
-    "!/android/build",
-    "/ios",
-    "/*.podspec"
-  ],
+  "main": "BleManager",
+  "types": "./index.d.ts",
   "scripts": {
     "version": "git add -A",
     "clean": "rimraf dist",
