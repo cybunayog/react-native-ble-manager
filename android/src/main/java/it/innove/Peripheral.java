@@ -66,7 +66,7 @@ public class Peripheral extends BluetoothGattCallback {
     private LinkedList<Callback> readDescriptorCallbacks = new LinkedList<>();
     private LinkedList<Callback> readRSSICallbacks = new LinkedList<>();
     private LinkedList<Callback> writeCallbacks = new LinkedList<>();
-    private LinkedList<Callback> writeDescriptorCallbacks = new LinkedList();
+    private LinkedList<Callback> writeDescriptorCallbacks = new LinkedList<>();
     private LinkedList<Callback> registerNotifyCallbacks = new LinkedList<>();
     private LinkedList<Callback> requestMTUCallbacks = new LinkedList<>();
 
@@ -377,8 +377,6 @@ public class Peripheral extends BluetoothGattCallback {
 				connectCallbacks.clear();
 
                 writeQueue.clear();
-                commandQueue.clear();
-                commandQueueBusy = false;
                 connected = false;
                 clearBuffers();
                 commandQueue.clear();
@@ -520,14 +518,15 @@ public class Peripheral extends BluetoothGattCallback {
                 }
 		} else if (!readDescriptorCallbacks.isEmpty()) {
 			final byte[] dataValue = copyOf(descriptor.getValue());
-            for (Callback readDescriptorCallback: readDescriptorCallbacks) {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        readDescriptorCallback.invoke(null, BleManager.bytesToWritableArray(dataValue));
+                        for (Callback readDescriptorCallback: readDescriptorCallbacks) {
+                            readDescriptorCallback.invoke(null, BleManager.bytesToWritableArray(dataValue));
+                        }
                     }
 			    });
-            }
+            
 			readDescriptorCallbacks.clear();
 		}
 	
